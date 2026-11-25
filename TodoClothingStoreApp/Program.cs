@@ -40,7 +40,7 @@ namespace TodoClothingStoreApp
                 .AddDefaultTokenProviders();
 
             builder.Services.AddSingleton<IEmailSender<ApplicationUser>, IdentityNoOpEmailSender>();
-
+            builder.Services.AddScoped<TodoClothingStoreApp.Services.StoreService>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

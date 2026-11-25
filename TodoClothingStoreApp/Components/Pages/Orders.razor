@@ -1,0 +1,55 @@
+﻿@page "/orders"
+@rendermode InteractiveServer
+@using TodoClothingStoreApp.Models
+@using TodoClothingStoreApp.Services
+@inject StoreService Store
+
+<PageTitle>История заказов</PageTitle>
+
+<h2 class="mb-4">История заказов</h2>
+
+@if (!orders.Any())
+{
+    <div class="alert alert-secondary">Заказов пока нет. Оформите первый заказ на главной странице!</div>
+}
+else
+{
+    <div class="row g-3">
+        @foreach (var order in orders)
+        {
+            <div class="col-md-6">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                        <span class="fw-bold">Заказ №@order.Id</span>
+                        <span class="badge bg-primary">@order.OrderDate.ToString("dd.MM.yyyy HH:mm")</span>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-2"><strong>Покупатель:</strong> @order.CustomerName</p>
+                        <ul class="list-group list-group-flush mb-3">
+                            @foreach (var item in order.Items)
+                            {
+                                <li class="list-group-item px-0 d-flex justify-content-between">
+                                    <span>@item.ProductName <span class="badge bg-light text-dark border">@item.Size</span></span>
+                                    <span class="text-muted">@item.Quantity шт. × @item.Price.ToString("N0") ₽</span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                    <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+                        <span class="text-muted">Оплачено при получении</span>
+                        <span class="fs-5 fw-bold text-success">@order.TotalAmount.ToString("N0") ₽</span>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private List<Order> orders = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        orders = await Store.GetOrdersAsync();
+    }
+}

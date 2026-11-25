@@ -1,0 +1,113 @@
+﻿@code {
+
+}
+@page "/manage"
+@rendermode InteractiveServer
+@using TodoClothingStoreApp.Models
+@using TodoClothingStoreApp.Services
+@inject StoreService Store
+
+<PageTitle>Управление товарами</PageTitle>
+
+<h2>Управление каталогом</h2>
+
+<div class="row">
+    <div class="col-md-5">
+        <div class="card p-3 mb-4">
+            <h4>Добавить одежду</h4>
+            <EditForm Model="newProduct" OnValidSubmit="HandleAddProduct">
+                <DataAnnotationsValidator />
+
+                <div class="mb-3">
+                    <label class="form-label">Название</label>
+                    <InputText class="form-control" @bind-Value="newProduct.Name" />
+                    <ValidationMessage For="@(() => newProduct.Name)" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Категория</label>
+                    <InputSelect class="form-select" @bind-Value="newProduct.CategoryId">
+                        <option value="0">-- Выберите категорию --</option>
+                        @foreach (var cat in categories)
+                        {
+                            <option value="@cat.Id">@cat.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="@(() => newProduct.CategoryId)" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Размер</label>
+                    <InputSelect class="form-select" @bind-Value="newProduct.Size">
+                        <option value="S">S</option>
+                        <option value="M">M</option>
+                        <option value="L">L</option>
+                        <option value="XL">XL</option>
+                    </InputSelect>
+                    <ValidationMessage For="@(() => newProduct.Size)" class="text-danger" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Цена (₽)</label>
+                    <InputNumber class="form-control" @bind-Value="newProduct.Price" />
+                    <ValidationMessage For="@(() => newProduct.Price)" class="text-danger" />
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Сохранить в базу</button>
+            </EditForm>
+        </div>
+    </div>
+
+    <div class="col-md-7">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Размер</th>
+                    <th>Цена</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in products)
+                {
+                    <tr>
+                        <td>@item.Name</td>
+                        <td>@item.Category?.Name</td>
+                        <td>@item.Size</td>
+                        <td>@item.Price ₽</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteProduct(item.Id)">Удалить</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private Product newProduct = new();
+    private List<Product> products = new();
+    private List<Category> categories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        categories = await Store.GetCategoriesAsync();
+        products = await Store.GetProductsAsync();
+    }
+
+    private async Task HandleAddProduct()
+    {
+        await Store.AddProductAsync(newProduct);
+        newProduct = new();
+        products = await Store.GetProductsAsync();
+    }
+
+    private async Task DeleteProduct(int id)
+    {
+        await Store.DeleteProductAsync(id);
+        products = await Store.GetProductsAsync();
+    }
+}
